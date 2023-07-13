@@ -5,3 +5,6 @@ __pycache__/financial_calculation.cpython-310.pyc
 StockTech.csv
 2330.TW.csv
 ret.csv
+__pycache__/CNN_model.cpython-310.pyc
+__pycache__/confusion_matrix.cpython-310.pyc
+1504.TW.csv

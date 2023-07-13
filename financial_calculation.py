@@ -32,10 +32,10 @@ class FinancialTesting:
 
   def sellingsignal(self, signal, stockcost_eachTime, futureTime):
     # difference = self.StockTechRet_Nonan.Close[futureTime]*self.EachTime-stockcost_eachTime
-    difference = self.StockTechRet_Nonan.Close[futureTime]*self.stockNumber/2 - self.StockCost/2
     # self.Cash += difference + stockcost_eachTime
     # self.StockCost -= stockcost_eachTime
     # self.stockNumber -= self.EachTime
+    difference = self.StockTechRet_Nonan.Close[futureTime]*self.stockNumber/2 - self.StockCost/2
     self.Cash += difference + self.StockCost/2
     self.StockCost -= self.StockCost/2
     self.stockNumber -= self.stockNumber/2
@@ -74,18 +74,18 @@ class FinancialTesting:
 
       # Calculate the profit\loss we make when hold signal is triggered, stock number equal to each stock
       # if self.stockNumber > 0:
-      #   # print("Holding signal is triggered and the signal now: {}".format(signal))
-      #   # print("Future price (holding signal): {}".format(self.StockTechRet_Nonan.Close[futureTime]))
-      #   if self.StockTechRet_Nonan.triple_barrier_signal[i] == 1:
-      #     stockcost_eachTime = self.StockCost/self.stockNumber*self.EachTime
-      #     difference = self.sellingsignal(signal, stockcost_eachTime, futureTime)
-      #     self.selling_price.append(self.StockTechRet_Nonan.Close[futureTime])
-      #     # print('Selling price: {}, Cash: {}, Stop Profit: {}\n'.format(self.StockTechRet_Nonan.Close[futureTime], self.Cash, difference))
-      #   elif self.StockTechRet_Nonan.triple_barrier_signal[i] == -1:
-      #     stockcost_eachTime = self.StockCost/self.stockNumber*self.EachTime
-      #     difference = self.sellingsignal(signal, stockcost_eachTime, futureTime)
-      #     self.selling_price.append(self.StockTechRet_Nonan.Close[futureTime])
-      #     # print('Selling price: {}, Cash: {}, Stop Loss: {}\n'.format(self.StockTechRet_Nonan.Close[futureTime], self.Cash, difference))
+        # print("Holding signal is triggered and the signal now: {}".format(signal))
+        # print("Future price (holding signal): {}".format(self.StockTechRet_Nonan.Close[futureTime]))
+        # if self.StockTechRet_Nonan.triple_barrier_signal[i] == 1:
+        #   stockcost_eachTime = self.StockCost/self.stockNumber*self.EachTime
+        #   difference = self.sellingsignal(signal, stockcost_eachTime, futureTime)
+        #   self.selling_price.append(self.StockTechRet_Nonan.Close[futureTime])
+        #   # print('Selling price: {}, Cash: {}, Stop Profit: {}\n'.format(self.StockTechRet_Nonan.Close[futureTime], self.Cash, difference))
+        # elif self.StockTechRet_Nonan.triple_barrier_signal[i] == -1:
+        #   stockcost_eachTime = self.StockCost/self.stockNumber*self.EachTime
+        #   difference = self.sellingsignal(signal, stockcost_eachTime, futureTime)
+        #   self.selling_price.append(self.StockTechRet_Nonan.Close[futureTime])
+        #   # print('Selling price: {}, Cash: {}, Stop Loss: {}\n'.format(self.StockTechRet_Nonan.Close[futureTime], self.Cash, difference))
       
       if self.stockNumber > 0 and i > 0:
         if self.StockTechRet_Nonan.triple_barrier_signal[i] == 1:
