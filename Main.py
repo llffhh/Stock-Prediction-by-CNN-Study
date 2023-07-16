@@ -10,53 +10,52 @@ import pandas as pd
 import numpy as np
 import datetime
 from CNN_model import Model
-from keras import utils
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
-import tensorflow_addons as tfa
+from CNN_process import process
 
 
 # Preprocessing
 # download stock information
-# stock = "1504"
-# StockCrawling = StockCrawl(stock)
-# dataStock = StockCrawling.csv_download(startdate="2018-01-01")
+stock = "1504"
+StockCrawling = StockCrawl(stock)
+dataStock = StockCrawling.csv_download(startdate="2018-01-01")
 
 
-#Calculate the techincal indicator
-# PdFrame = pd.DataFrame(dataStock.index)
-# PdFrame = PdFrame.set_index('Date')
+# Calculate the techincal indicator
+PdFrame = pd.DataFrame(dataStock.index)
+PdFrame = PdFrame.set_index('Date')
 
-# for i in range(6,21):
-#     print("period: {}".format(i))
-#     PdFrame[f"RSI_{i}"]=TechIndicator().RSI(dataStock,i)
-#     PdFrame[f"WilliamR_{i}"]=TechIndicator().WilliamR(dataStock,i)
-#     PdFrame[f"WMA_{i}"]=TechIndicator().WMA(dataStock,i)
-#     PdFrame[f"EMA_{i}"]=TechIndicator().EMA(dataStock,i)
-#     PdFrame[f"MA_{i}"]=TechIndicator().MA(dataStock,i)
-#     PdFrame[f"HMA_{i}"]=TechIndicator().HMA(dataStock,i)
-#     PdFrame[f"TEMA_{i}"]=TechIndicator().TEMA(dataStock,i)
-#     PdFrame[f"CCI_{i}"]=TechIndicator().CCI(dataStock,i)
-#     PdFrame[f"CMO_{i}"]=TechIndicator().CMO(dataStock,i)
-#     PdFrame[f"MACD_{i}"]=TechIndicator().MACD(dataStock,i)[2]
-#     PdFrame[f"PPO_{i}"]=TechIndicator().PPO(dataStock,i)
-#     PdFrame[f"ROC_{i}"]=TechIndicator().ROC(dataStock,i)
-#     PdFrame[f"CMFI_{i}"]=TechIndicator().CMFI(dataStock,i)
-#     PdFrame[f"DMI_{i}"]=TechIndicator().DMI(dataStock,i)[2]
-#     PdFrame[f"SAR_{i}"]=TechIndicator().SAR(dataStock,i)
+for i in range(6,21):
+    print("period: {}".format(i))
+    PdFrame[f"RSI_{i}"]=TechIndicator().RSI(dataStock,i)
+    PdFrame[f"WilliamR_{i}"]=TechIndicator().WilliamR(dataStock,i)
+    PdFrame[f"WMA_{i}"]=TechIndicator().WMA(dataStock,i)
+    PdFrame[f"EMA_{i}"]=TechIndicator().EMA(dataStock,i)
+    PdFrame[f"MA_{i}"]=TechIndicator().MA(dataStock,i)
+    PdFrame[f"HMA_{i}"]=TechIndicator().HMA(dataStock,i)
+    PdFrame[f"TEMA_{i}"]=TechIndicator().TEMA(dataStock,i)
+    PdFrame[f"CCI_{i}"]=TechIndicator().CCI(dataStock,i)
+    PdFrame[f"CMO_{i}"]=TechIndicator().CMO(dataStock,i)
+    PdFrame[f"MACD_{i}"]=TechIndicator().MACD(dataStock,i)[2]
+    PdFrame[f"PPO_{i}"]=TechIndicator().PPO(dataStock,i)
+    PdFrame[f"ROC_{i}"]=TechIndicator().ROC(dataStock,i)
+    PdFrame[f"CMFI_{i}"]=TechIndicator().CMFI(dataStock,i)
+    PdFrame[f"DMI_{i}"]=TechIndicator().DMI(dataStock,i)[2]
+    PdFrame[f"SAR_{i}"]=TechIndicator().SAR(dataStock,i)
 
 
 
-# StockTech = pd.concat([dataStock,PdFrame],axis = 1)
+StockTech = pd.concat([dataStock,PdFrame],axis = 1)
 
-df = pd.read_csv("2330.TW.csv")
-df = df.dropna()
-df = df.set_index('Date')
-df.index = pd.DatetimeIndex(df.index)
-dataStock = df
-StockTech = pd.read_csv("StockTech.csv")
-StockTech = StockTech.set_index('Date')
-StockTech.index = pd.DatetimeIndex(StockTech.index)
+# df = pd.read_csv("2330.TW.csv")
+# df = df.dropna()
+# df = df.set_index('Date')
+# df.index = pd.DatetimeIndex(df.index)
+# dataStock = df
+# StockTech = pd.read_csv("StockTech.csv")
+# StockTech = StockTech.set_index('Date')
+# StockTech.index = pd.DatetimeIndex(StockTech.index)
 
 #Filter the all the Nan data or select the date we need
 datestamp = []
@@ -131,104 +130,84 @@ FinancialTesting(StockTechRet_Nonan, 5, 10000, 10, 5, 1).process()
 
 # Machine learning algorithm
 # Postprocessing
-# Print Model
-print(Model.net().summary())
+# CNN_model net
+Model_net = Model.net()
 
-# Training progress
-ten_y=utils.to_categorical(train_y,3)
-train_history = Model.net().fit(x=train_x,y=ten_y,batch_size=1028,epochs=100,shuffle=False)
+result_net = process(train_x, train_y, test_x, test_y, cv_y, cv_x, Model_net, batch_size=1028, epochs=100)
 
-# validation progress
-list_cv_y=utils.to_categorical(cv_y,3)
+# CNN_model net1
+lr=1e-3
+total_steps=10000
+warmup_proportion=0.1
+min_lr=1e-5
+Model_net1 = Model.net1(lr,total_steps,warmup_proportion,min_lr)
 
-list_cv_x=[]
-for i in range(len(cv_x)):
-  list_cv_x.append(cv_x[i].tolist())
-list_cv_x=np.array(list_cv_x).reshape(len(list_cv_x),15,15,1)
-validation_loss, validation_acc = Model.net().evaluate(list_cv_x,list_cv_y)
-print("Validation Loss = {}, Validation Acc. = {}".format(validation_loss,validation_acc))
+result_net1 = process(train_x, train_y, test_x, test_y, cv_y, cv_x, Model_net1, batch_size=2000, epochs=800)
 
-# Predict progress
-list_test_y=utils.to_categorical(test_y,3)  # 0, 1, -1
+# gather results
+Model_result = [[result_net, Model_net], [result_net1,Model_net1]]
 
-list_test_x=[]
-for i in range(len(test_x)):
-  list_test_x.append(test_x[i].tolist())
-list_test_x=np.array(list_test_x).reshape(len(test_x),15,15,1)
+# print results
+for i in Model_result:
+    result_data, model = i
+    pre_y_label, test_loss, test_acc, result, train_history = result_data
+    # Print Model
+    print("============================================================")
+    print(model.summary())
 
-pre_y = Model.net().predict(list_test_x)
-# As pre_y have 3 column therefore there will have 0,1,2 after calculate as np.argmax.
-# Moreover, our label is 0, 1, -1. So we need to change the 2 to -1 when do the F1 score
-pre_y_label=np.argmax(pre_y,axis=1)
+    # print F1Score
+    print("Test Loss = {}, Test Acc. = {}".format(test_loss,test_acc))
+    print("F1Score --> 0: {}, 1: {}, -1: {}".format(result.numpy()[0],result.numpy()[1],result.numpy()[2]))
 
-# print("test y label:",np.reshape(test_y,(1,len(test_y))))
-for i in range(len(pre_y_label)):
-  if pre_y_label[i]==2:
-    pre_y_label[i]=-1
-# print("pred y label:",pre_y_label)
+    ConfusionMatrix = confusion_matrix(test_y,pre_y_label)
+    print(classification_report(test_y, pre_y_label))
 
-# print(pre_y)
-metric = tfa.metrics.F1Score(num_classes=3)
-metric.update_state(list_test_y, pre_y)
-result = metric.result()
-test_loss, test_acc = Model.net().evaluate(list_test_x,list_test_y)
-print("Test Loss = {}, Test Acc. = {}".format(test_loss,test_acc))
-print("F1Score --> 0: {}, 1: {}, -1: {}".format(result.numpy()[0],result.numpy()[1],result.numpy()[2]))
+    losses = list(train_history.history['loss'])
+    accuracies = list(train_history.history['acc'])
+    plt.figure(facecolor='lightgray')
+    plt.subplot(1,2,1)
+    plt.plot(losses)
+    plt.xlabel('epoch')
+    plt.ylabel('loss')
+    plt.title('Loss vs. No. of epochs');
+    plt.subplot(1,2,2)
+    plt.plot(accuracies, '-x')
+    plt.xlabel('epoch')
+    plt.ylabel('accuracy')
+    plt.title('accuracy vs. No. of epochs');
 
+    # draw the signal and pred_y_label
+    plt.figure(facecolor='lightgray')
+    start = len(StockTechRet_Nonan)-len(test_x)
+    end = len(StockTechRet_Nonan)
+    price = StockTechRet_Nonan.Close[start:end]
+    date = StockTechRet_Nonan.index[start:end]
+    signal = StockTechRet_Nonan.triple_barrier_signal[start:end]
+    pred_y = pre_y_label
+    fig, ax = plt.subplots(constrained_layout=True)
+    ax.plot(date,price,label='price')
+    ax1 = ax.twinx()
+    ax1.plot(date,signal,'r',marker = 'o',label = "signal")
+    ax1.plot(date,pred_y,'b',label = 'pred_y')
+    ax.legend()
+    ax1.legend()
+    ax.set_xlabel('Date')
+    ax.set_ylabel('Closed Price')
+    ax1.set_ylabel('Signal')
+    # ax.xaxis.set_major_locator(mdates.MonthLocator(date))
+    plt.grid()
 
-ConfusionMatrix = confusion_matrix(test_y,pre_y_label)
-# print(confusion_matrix(test_y,pre_y_label))
-print(classification_report(test_y, pre_y_label))
-
-
-# losses = [x['loss'] for x in train_history.history]
-losses = list(train_history.history['loss'])
-accuracies = list(train_history.history['acc'])
-plt.figure(facecolor='lightgray')
-plt.subplot(1,2,1)
-plt.plot(losses)
-plt.xlabel('epoch')
-plt.ylabel('loss')
-plt.title('Loss vs. No. of epochs');
-plt.subplot(1,2,2)
-plt.plot(accuracies, '-x')
-plt.xlabel('epoch')
-plt.ylabel('accuracy')
-plt.title('accuracy vs. No. of epochs');
-
-# draw the signal and pred_y_label
-plt.figure(facecolor='lightgray')
-start = len(StockTechRet_Nonan)-len(test_x)
-end = len(StockTechRet_Nonan)
-price = StockTechRet_Nonan.Close[start:end]
-date = StockTechRet_Nonan.index[start:end]
-signal = StockTechRet_Nonan.triple_barrier_signal[start:end]
-pred_y = pre_y_label
-fig, ax = plt.subplots(constrained_layout=True)
-ax.plot(date,price,label='price')
-ax1 = ax.twinx()
-ax1.plot(date,signal,'r',marker = 'o',label = "signal")
-ax1.plot(date,pred_y,'b',label = 'pred_y')
-ax.legend()
-ax1.legend()
-ax.set_xlabel('Date')
-ax.set_ylabel('Closed Price')
-ax1.set_ylabel('Signal')
-# ax.xaxis.set_major_locator(mdates.MonthLocator(date))
-plt.grid()
+    # Plot the Confusion Matrix
+    plot_confusion_matrix(ConfusionMatrix, normalize = False, target_names = ['stop loss', 'hold', 'stop profit'], title = "Confusion Matrix")
 
 
-# Plot the Confusion Matrix
-plot_confusion_matrix(ConfusionMatrix, normalize = False, target_names = ['stop loss', 'hold', 'stop profit'], title = "Confusion Matrix")
-
-
-# Calculate the Financial Result
-print("Original Signal base on Triple Barrier Method")
-FinancialTesting(StockTechRet_Nonan[start:end],10,1000,1,10,1).process()
-Pred_DataFrame = pd.DataFrame(StockTechRet_Nonan.index[start:end])
-Pred_DataFrame = Pred_DataFrame.set_index('Date')
-Pred_DataFrame['Close'] = StockTechRet_Nonan.Close[start:end]
-Pred_DataFrame['triple_barrier_sell_time'] = StockTechRet_Nonan.triple_barrier_sell_time[start:end]
-Pred_DataFrame['triple_barrier_signal'] = pre_y_label
-print("\nPrediction Signal by CNN")
-FinancialTesting(Pred_DataFrame,10,1000,1,10,1).process()
+    # Calculate the Financial Result
+    print("Original Signal base on Triple Barrier Method")
+    FinancialTesting(StockTechRet_Nonan[start:end],10,1000,1,10,1).process()
+    Pred_DataFrame = pd.DataFrame(StockTechRet_Nonan.index[start:end])
+    Pred_DataFrame = Pred_DataFrame.set_index('Date')
+    Pred_DataFrame['Close'] = StockTechRet_Nonan.Close[start:end]
+    Pred_DataFrame['triple_barrier_sell_time'] = StockTechRet_Nonan.triple_barrier_sell_time[start:end]
+    Pred_DataFrame['triple_barrier_signal'] = pre_y_label
+    print("\nPrediction Signal by CNN")
+    FinancialTesting(Pred_DataFrame,10,1000,1,10,1).process()

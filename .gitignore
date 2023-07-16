@@ -8,3 +8,4 @@ ret.csv
 __pycache__/CNN_model.cpython-310.pyc
 __pycache__/confusion_matrix.cpython-310.pyc
 1504.TW.csv
+__pycache__/CNN_process.cpython-310.pyc
