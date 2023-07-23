@@ -9,3 +9,14 @@ __pycache__/CNN_model.cpython-310.pyc
 __pycache__/confusion_matrix.cpython-310.pyc
 1504.TW.csv
 __pycache__/CNN_process.cpython-310.pyc
+saved_model/ModelNet/fingerprint.pb
+saved_model/ModelNet/keras_metadata.pb
+saved_model/ModelNet/saved_model.pb
+saved_model/ModelNet/variables/variables.data-00000-of-00001
+saved_model/ModelNet/variables/variables.index
+saved_model/ModelNet1/fingerprint.pb
+saved_model/ModelNet1/keras_metadata.pb
+saved_model/ModelNet1/saved_model.pb
+saved_model/ModelNet1/variables/variables.data-00000-of-00001
+saved_model/ModelNet1/variables/variables.index
+3035.TW.csv

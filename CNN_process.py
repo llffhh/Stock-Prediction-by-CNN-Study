@@ -4,10 +4,11 @@ import tensorflow_addons as tfa
 
 
 
-def process(train_x, train_y, test_x, test_y, cv_y, cv_x, model, batch_size, epochs):
+def process(train_x, train_y, test_x, test_y, cv_y, cv_x, model, batch_size, epochs, model_name):
     # Training progress
     ten_y=utils.to_categorical(train_y,3)
     train_history = model.fit(x=train_x,y=ten_y,batch_size=batch_size,epochs=epochs,shuffle=False)
+    model.save(f'saved_model/{model_name}')
 
     # validation progress
     list_cv_y=utils.to_categorical(cv_y,3)

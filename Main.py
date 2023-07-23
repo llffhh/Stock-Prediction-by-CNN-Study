@@ -13,11 +13,12 @@ from CNN_model import Model
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
 from CNN_process import process
+import tensorflow as tf
 
 
 # Preprocessing
 # download stock information
-stock = "1504"
+stock = "3035"
 StockCrawling = StockCrawl(stock)
 dataStock = StockCrawling.csv_download(startdate="2018-01-01")
 
@@ -133,7 +134,7 @@ FinancialTesting(StockTechRet_Nonan, 5, 10000, 10, 5, 1).process()
 # CNN_model net
 Model_net = Model.net()
 
-result_net = process(train_x, train_y, test_x, test_y, cv_y, cv_x, Model_net, batch_size=1028, epochs=100)
+result_net = process(train_x, train_y, test_x, test_y, cv_y, cv_x, Model_net, batch_size=1028, epochs=100, model_name='ModelNet')
 
 # CNN_model net1
 lr=1e-3
@@ -142,7 +143,7 @@ warmup_proportion=0.1
 min_lr=1e-5
 Model_net1 = Model.net1(lr,total_steps,warmup_proportion,min_lr)
 
-result_net1 = process(train_x, train_y, test_x, test_y, cv_y, cv_x, Model_net1, batch_size=2000, epochs=800)
+result_net1 = process(train_x, train_y, test_x, test_y, cv_y, cv_x, Model_net1, batch_size=2000, epochs=800, model_name='ModelNet1')
 
 # gather results
 Model_result = [[result_net, Model_net], [result_net1,Model_net1]]
@@ -211,3 +212,7 @@ for i in Model_result:
     Pred_DataFrame['triple_barrier_signal'] = pre_y_label
     print("\nPrediction Signal by CNN")
     FinancialTesting(Pred_DataFrame,10,1000,1,10,1).process()
+
+
+    # load the model
+    model_net=tf.keras.models.load_model('saved_model/ModelNet')
