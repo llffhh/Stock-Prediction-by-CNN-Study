@@ -20,3 +20,11 @@ saved_model/ModelNet1/saved_model.pb
 saved_model/ModelNet1/variables/variables.data-00000-of-00001
 saved_model/ModelNet1/variables/variables.index
 3035.TW.csv
+__pycache__/confusion_matrix.cpython-311.pyc
+__pycache__/financial_calculation.cpython-311.pyc
+__pycache__/Technical_Index.cpython-311.pyc
+__pycache__/triple_barrier.cpython-311.pyc
+__pycache__/StockCrawl.cpython-311.pyc
+2356.TW.csv
+__pycache__/CNN_model.cpython-311.pyc
+__pycache__/CNN_process.cpython-311.pyc
