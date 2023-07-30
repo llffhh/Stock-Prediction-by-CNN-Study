@@ -15,6 +15,7 @@ from sklearn.metrics import confusion_matrix
 from CNN_process import process
 import tensorflow as tf
 import streamlit as st
+import time
 
 
 # Preprocessing
@@ -29,9 +30,12 @@ def Stock_Information_Download(stock="2330", startdate="2018-01-01"):
 def Technical_Indicator(dataStock):
     PdFrame = pd.DataFrame(dataStock.index)
     PdFrame = PdFrame.set_index('Date')
+    my_bar = st.progress(0, text="calculating technical indicator")
 
     for i in range(6,21):
-        print("period: {}".format(i))
+        # print("period: {}".format(i))
+        st.spinner(f'Period: {i}')
+        my_bar.progress((i-5)/15, text=f"Technical indicator calculate period: {i}")
         PdFrame[f"RSI_{i}"]=TechIndicator().RSI(dataStock,i)
         PdFrame[f"WilliamR_{i}"]=TechIndicator().WilliamR(dataStock,i)
         PdFrame[f"WMA_{i}"]=TechIndicator().WMA(dataStock,i)
@@ -217,15 +221,17 @@ if __name__ == "__main__":
     st.write("""
     # AI Stock Prediction
     """)
-    while True:
-        mode = input("Please select what mode do you want:\n 1. Training\n 2. Predict\n Ans: ")
-        if mode == "1":
-            stock = input("Please keyin the stock number: ")
-            startdate = input("Please keyin the starting date (Ex: 2018-01-01): ")
-            profit_Percentage = float(input("How much stop profit percentage do you prefer (Ex: 1.1): "))
-            loss_Percentage = float(input("How much stop loss percentage do you prefer (Ex: 0.9): "))
-            triple_period = int(input("How long do your investment period (Ex: 10): "))
 
+    mode = st.selectbox("Please select what mode do you want:", ("1. Training", "2. Predict"))
+    if mode == "1. Training":
+        stock = st.text_input("Please keyin the stock number: ")
+        startdate = st.text_input("Please keyin the starting date (Ex: 2018-01-01): ")
+        profit_Percentage = st.number_input("How much stop profit percentage do you prefer (Ex: 1.1): ")
+        loss_Percentage = st.number_input("How much stop loss percentage do you prefer (Ex: 0.9): ")
+        triple_period = st.number_input("How long do your investment period (Ex: 10): ",step=1)
+        result_btn = st.button("Start The Program")
+
+        if result_btn:
             # download stock information
             dataStock = Stock_Information_Download(stock=stock, startdate=startdate)
 
@@ -250,17 +256,65 @@ if __name__ == "__main__":
             # print results
             # print_Model_Result(Model_result, test_x, test_y, StockTechRet_Nonan, period, cash, eachStock, triple_barrier_period, passlosssignal)
             print_Model_Result(Model_result, test_x, test_y, StockTechRet_Nonan, triple_period, 10000, triple_period, triple_period, 1)
+    
+    else:
+        if 'stage' not in st.session_state:
+            st.session_state.stage = 0
+
+        def set_state(i):
+            st.session_state.stage = i
+
+        st.info(st.session_state.stage)
+
+        if st.session_state.stage == 0:
+            st.button("Start The Program", on_click=set_state, args=[1])
+
+        if st.session_state.stage >= 1:
+            stock = st.text_input("Please keyin the stock number: ", on_change=set_state, args=[2])
+
+        if st.session_state.stage == 2:
+            with st.container():
+                st.info("Start gathering the data!")
+                df = pd.read_csv(f"{stock}.TW.csv")
+                df = df.dropna()
+                df = df.set_index('Date')
+                df.index = pd.DatetimeIndex(df.index)
+                dataStock = df
+
+            # Calculate the technical indicator
+            with st.container():
+                st.info("Start calculating the technical indicator!")
+                StockTech = Technical_Indicator(dataStock)
+                StockTech = StockTech.dropna()
+            
+            set_state(3)
+            
+        if st.session_state.stage >= 3:
+            # Select the predicted date
+            with st.container():
+                st.info("Start preparing the predicted data!")
+                startdate = datetime.datetime.timestamp(StockTech.index[0])
+                date = st.date_input("Please select the date you want to use as prediction", min_value=datetime.datetime.fromtimestamp(startdate),
+                                     on_change=set_state, args=[4])
         
-        else:
-            df = pd.read_csv("2330.TW.csv")
-            df = df.dropna()
-            df = df.set_index('Date')
-            df.index = pd.DatetimeIndex(df.index)
-            dataStock = df
+        if st.session_state.stage >= 4:
+            profit_Percentage = st.number_input("How much stop profit percentage do you prefer (Ex: 1.1): ", on_change=set_state, args=[5])
+        
+        if st.session_state.stage >= 5:
+            loss_Percentage = st.number_input("How much stop loss percentage do you prefer (Ex: 0.9): ", on_change=set_state, args=[6])
+        
+        if st.session_state.stage >= 6:
+            triple_period = st.number_input("How long do your investment period (Ex: 10): ",step=1, on_change=set_state, args=[7])
+
+        if st.session_state.stage == 7:
+            StockTech = StockTech.loc[StockTech.index>=np.datetime64(date)]
+            train_x, train_y, test_x, test_y, cv_x, cv_y, StockTechRet_Nonan = preprocessing(StockTech, profit_Percentage, loss_Percentage, triple_period)
 
             # load the model
-            model_net=tf.keras.models.load_model('saved_model/ModelNet')
+            with st.container():
+                st.info("Start loading the model!")
+                model_net=tf.keras.models.load_model('saved_model/ModelNet')
 
-        Y_N = input("Continue? (Y/N): ")
-        if Y_N == "N":
-            break
+
+
+
